@@ -34,6 +34,8 @@ define(['models/utility',
 						DinItems.at(dinPin).setEnabledStatus(true);
 						DinItems.at(dinPin).setDefaultPullValue(value.getUint8(2));
 
+						let dinComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+						array.push( dinComValue);
 					}else if((value.getUint8(1)>=Utility.FUNCTION_ID_DOUT_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_DOUT_31)){
 						let doutPin = value.getUint8(1) - Utility.FUNCTION_ID_DOUT_0;
 						let pullValue = value.getUint8(2) & 0x03;
@@ -43,7 +45,9 @@ define(['models/utility',
 						dout.setPullValue(pullValue);
 						dout.setDriveValue(driveValue);
 						dout.setDefaultPinValue(value.getUint8(3));
-						
+
+						let doutComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+						array.push(doutComValue);	
 
 					}else if((value.getUint8(1)>=Utility.FUNCTION_ID_AIN_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_AIN_5)){
 						let ainPin = value.getUint8(1) - Utility.FUNCTION_ID_AIN_0;
@@ -55,6 +59,8 @@ define(['models/utility',
 						ain.setRangeValue(rangeValue);
 						ain.setRateValue(rateValue);
 						// console.log(JSON.stringify(AinItems.at(ainPin)));
+						let ainComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+						array.push(ainComValue);
 					}
 					else if((value.getUint8(1)>=Utility.FUNCTION_ID_PWM_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_PWM_3)){
 						let pwmIndex = value.getUint8(1) - Utility.FUNCTION_ID_PWM_0;
@@ -64,6 +70,8 @@ define(['models/utility',
 						pwm.setDriveValue(value.getUint8(3));
 						pwm.setDefaultDutyCycle(value.getUint8(4));
 						// console.log(JSON.stringify(pwm));
+						let pwmComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+						array.push(pwmComValue);
 
 					}else if((value.getUint8(1)>=Utility.FUNCTION_ID_SERVO_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_SERVO_3)){
 						let servoIndex = value.getUint8(1) - Utility.FUNCTION_ID_SERVO_0;
@@ -73,6 +81,8 @@ define(['models/utility',
 						servo.setDriveValue(value.getUint8(3));
 						servo.setDefaultPercentage(value.getUint8(4));
 						// console.log(JSON.stringify(ServoItems.at(servoIndex)));
+						let servoComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+						array.push(servoComValue);
 					}
 			}else if(value.getUint8(0)=== Utility.MANAGE_ID_DEVICE_RESPONSE){
 				if(value.getUint8(1) === Utility.MANAGE_ID_DEVICE_GET_INTERFACES){
@@ -309,42 +319,6 @@ define(['models/utility',
 
 		 function readPinStatus(){
 			console.log("readPinStatus");
-
-			for(let inputPinIndex = 0;inputPinIndex < Utility.DIN_PIN_NUM; inputPinIndex++){
-				if(DinItems.at(inputPinIndex).getEnabledStatus() === true){
-					let dinComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,Utility.FUNCTION_ID_DIN_0+inputPinIndex]);
-					array.push( dinComValue);
-				}
-			}
-
-			for(let outputPinIndex = 0;outputPinIndex < Utility.DOUT_PIN_NUM; outputPinIndex ++){
-				if(DoutItems.at(outputPinIndex).getDoutEnabledStatus()===true){
-					let doutComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,Utility.FUNCTION_ID_DOUT_0+outputPinIndex]);
-					array.push(doutComValue);
-				}
-			}
-
-			for(let analogPinIndex = 0; analogPinIndex < Utility.AIN_PIN_NUM; analogPinIndex++){
-				if(AinItems.at(analogPinIndex).getEnabledStatus() === true){
-					let ainComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,Utility.FUNCTION_ID_AIN_0+analogPinIndex]);
-					array.push(ainComValue);
-					}
-				}
-			
-
-			for(let pwmIndex = 0; pwmIndex < Utility.PWM_CHANNELS; pwmIndex++){
-				if(PwmItems.at(pwmIndex).getEnabledStatus() === true){
-					let pwmComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,Utility.FUNCTION_ID_PWM_0+pwmIndex]);
-					array.push(pwmComValue);
-				}
-			}
-
-			for(let servoIndex = 0; servoIndex < Utility.SERVO_CHANNELS; servoIndex++){
-				if(ServoItems.at(servoIndex).getEnabledStatus() === true){
-					let servoComValue =new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,(Utility.FUNCTION_ID_SERVO_0 + servoIndex)]);
-					array.push(servoComValue);
-				}
-			}
 
 			array.forEach(function(comValue){
 				sequence = sequence.then(() =>{
