@@ -1,0 +1,573 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Origin Trial Token, feature = Web Bluetooth, origin = https://localhost, expires = 2016-12-12 -->
+<meta http-equiv="origin-trial" data-feature="Web Bluetooth" data-expires="2016-12-12" content="AuoQjXhcy5Y3XvTERqnCCx6O1WsD4CrZPpIVyFYEOHN8sg8W7jgIFJY9mVVV5IMlxwOZqq3cwc1F4S9CBUIvJAAAAABPeyJvcmlnaW4iOiJodHRwczovL2xvY2FsaG9zdDo0NDMiLCJmZWF0dXJlIjoiV2ViQmx1ZXRvb3RoIiwiZXhwaXJ5IjoxNDgxNTU4Mzc1fQ==">
+    <title>shs</title>
+    <!-- Bootstrap -->
+	<!--<link href="css/bootstrap.css" rel="stylesheet"> -->
+    <link href ="css/switch.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+		  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+		<![endif]-->
+  </head>
+
+  <body>
+  <a href="#app" target="_blank">Open SHS</a>
+           
+    <script data-main="js/main" src="js/lib/require-min.js" async></script>
+
+ <!--SHS Main View-->
+  <script type ="text/template" id="shs_main">
+      <div id="app" class="border" >
+        <div class="title"> 
+          <h1>SHS </h1>
+        </div>
+      <% if(!this.model.connected()){ %>
+        <button id="find_hardware" class="shs_bt">Find Hardware</button><br>
+       <% }else{ %>
+         <h2><%=this.model.deviceName %></h2>
+          <% if(!this.model.finishConfiguration()){ %>
+            <button id="waiting" class="shs_bt">Get configuration,waiting... </button><br>
+          <% }else{ %>
+            <button id="show_interface" class="shs_bt">Show Interface </button><br>
+            <% } %>
+            <button id="disconnect_hardware" class="shs_bt">Disconnect Hardware</button>
+        <% } %>
+            
+      </div>
+  </script>
+
+  <!--Interface View-->
+    <script type ="text/html" id="shs_interface"> 
+      <div id="interface" class="border" style ="height:auto">
+        <div class="title"> 
+          <span id ="goShsView"class="leftArrow">&#60;   SHS</span><h1>Select Interface</h1>
+        </div>
+        <ul id="interface_list">
+        </ul>
+      </div>
+    </script>
+
+    <!--Interface Item -->
+    <script type="text/html" id="interface_item">
+       <div id="item" >
+          <label> <%- name %> </label>
+          <span class="rightArrow">&#62;<span>
+        </div>
+    </script>
+
+    <!--Din View-->
+    <script type ="text/html" id="shs_din">
+      <div id="din" class ="border">
+        <div class="title"> 
+          <span id ="dinBack2Interface"class="leftArrow">&#60;   Select Interface</span>
+          <h1>SHS Din</h1>
+          <span id="dinSetting" class="setting"> Setting</span>
+        </div>
+        <ul id="din_list">
+        </ul>
+      </div> <!-- din -->
+    </script>
+
+    <!--dinItem -->
+    <script type="text/html" id="din_item">
+       <div >
+          <label> <%= number%> </label>
+          <% if(this.model.getEnabledStatus()===true) { %>
+            <% if(this.model.getStatusValue()=== 1){ %>
+              <img src ='img/checked_H.png'>
+            <% }else if(this.model.getStatusValue()=== 0) { %>
+              <img src ='img/checked_L.png'>
+            <% } %>
+          <% }else{ %>
+          <img src="img/disable_checkbox.png">
+          <% } %>
+        </div>
+    </script>
+
+    <!--Din Setting View-->
+    <script type ="text/html" id="shs_din_setting">
+      <div id="dinSetting" class ="border">
+        <div class="title"> 
+          <span id ="settingBack2Din"class="leftArrow">&#60;   SHS Din</span>
+          <h1>Din Default Setting</h1>
+        </div>
+
+        <div class="setting_content">
+          <div id="din_left">
+            <label class="subtitle" > Din </label></br></br>
+            <select id='dinSetting_din'>
+            </select>
+
+          </div>
+
+          <div id='din_middle'>
+            <label class="subtitle"> Enabled</label> </br></br>
+             <label class="switch">
+              <input type="checkbox" id='dinSetting_switch'> <!-- checked -->
+              <div class="slider round"></div>
+            </label>
+          </div>
+
+          <div id='din_right'>
+            <label class="subtitle" > Pull </label></br></br>
+            <select id="dinSetting_pull" name ='dinSetting_default'>
+              <option value = '0'>No Pull</option>
+              <option value = '1'>Pull Down</option>
+              <option value = '2'>Pull Up</option>
+            </select>
+
+          </div>
+
+
+        </div> <!-- din setting conent end-->
+          
+          <div class='saveSetting'> <!-- save setting start -->
+            <button class='saveButton' id='dinSetting_saveButton'> Save </button></br></br>
+            <p class='desc'>  <img class ='saveImg' src ='img/ticked.png' id='dinSetting_tickImg'>Lock Database After Save
+           </p> 
+         </div> <!-- save setting end -->
+
+      </div> <!-- dinSetting end-->
+    </script>
+
+      <script type ="text/html" id= 'dinSetting_din_item'>
+        <%= number %> 
+      </script>
+
+
+    <!--Dout View-->
+    <script type ="text/html" id="shs_dout">
+      <div id="dout" class ="border"> <!-- dout start -->
+        <div class="title"> 
+          <span id ="doutBack2Interface"class="leftArrow">&#60;   Select Interface</span>
+          <h1>SHS Dout</h1>
+          <span id="doutSetting" class="setting"> Setting</span>
+        </div>
+        <ul id="dout_list">
+        </ul>
+      </div> <!-- dout end -->
+    </script>
+
+    <!--doutItem -->
+    <script type="text/html" id="dout_item">
+       <div >
+          <label> <%= number%> </label>
+          <% if(this.model.getDoutEnabledStatus() === true) { %>
+            <% if(this.model.getCurrentPinValue() === 1){ %>
+              <img src ='img/checked_H.png'>
+            <% }else if(this.model.getCurrentPinValue() === 0) { %>
+              <img src ='img/checked_L.png'>
+            <% } %>
+          <% }else{ %>
+          <img src="img/disable_checkbox.png">
+          <% } %>
+        </div>
+    </script>
+
+    <!--Dout Setting View-->
+    <script type="text/html" id ="shs_dout_setting">
+      <div id="doutSetting" class ="border"> <!-- doutSetting start -->
+        <div class="title"> 
+          <span id ="settingBack2Dout"class="leftArrow">&#60;   SHS Dout</span>
+          <h1>Dout Default Setting</h1>
+        </div>
+
+        <div class='setting_content'> <!-- dout setting start -->
+           <div id="dout_column1">
+            <label class="subtitle"> Dout </label></br></br>
+            <select id='doutSetting_pin'>
+
+           </select>
+          </div>
+
+          <div  id="dout_column2">
+            <label class="subtitle"> Enabled</label> </br></br>
+             <label class="switch">
+              <input type="checkbox" id='doutSetting_switch'> <!-- checked -->
+              <div class="slider round"></div>
+            </label>
+          </div>
+
+          <div id="dout_column3">
+            <label class="subtitle" id="dout_pull_label"> Pull </label></br></br>
+            <select id ='doutSetting_pull'>
+              <option value = '0'>No Pull</option>
+              <option value = '1'>Pull Down</option>
+              <option value = '2'>Pull Up</option>
+            </select>
+          </div>
+
+          <div id="dout_column4">
+            <label class="subtitle"> Drive</label></br></br>
+            <select id='doutSetting_drive'>
+              <option value ='0'>S0S1</option>
+              <option value ='1'>H0S1</option>
+              <option value ='2'>S0H1</option>
+              <option value ='3'>H0H1</option>
+              <option value ='4'>D0S1</option>
+              <option value ='5'>D0H1</option>
+              <option value ='6'>S0D1</option>
+              <option value ='7'>H0D1</option>
+            </select>
+          </div>
+
+          <div id="dout_column5">
+            <label class="subtitle"> Default</label></br></br>
+            <select id='doutSetting_default'>
+              <option value ='0'>Low</option>
+              <option value ='1'>High</option>
+            </select>
+          </div>
+      </div> <!-- dout_setting_content end-->
+
+      <div class='saveSetting'> <!-- save setting start -->
+        <button class='saveButton' id='doutSetting_saveButton'> Save </button></br></br>
+        <p class='desc'>  <img class ='saveImg' src ='img/ticked.png' id='doutSetting_tickImg'>Lock Database After Save
+       </p> 
+      </div> <!-- save setting end -->
+
+      </div> <!-- doutSetting end-->
+    </script>
+
+
+      <script type ="text/html" id= 'doutSetting_pin_item'>
+        <%= number %> 
+      </script>
+
+     <!--Ain View-->
+    <script type ="text/html" id="shs_ain">
+      <div id="ain" class ="border"> <!-- ain start -->
+        <div class="title"> 
+          <span id ="ainBack2Interface"class="leftArrow">&#60;   Select Interface</span>
+          <h1>SHS AIN</h1>
+          <span id="ainSetting" class="setting"> Setting</span>
+        </div>
+
+        <div id='ain_content'> <!-- ain content start -->
+        </div> <!-- ain content end -->
+
+      </div> <!-- ain end -->
+    </script>
+
+    <script type="text/html" id="ain_item">
+      <!-- <div class="ainStyle"> -->
+        <label class="subtitle"> <%=type%><%=number%></label>
+        <progress value= '<%= statusValue%>' min='0' max='1023' class="progress"></progress></br></br></br>
+        <label id ='ainValue' class ="progressValueStyle"><%= statusValue %></label>
+     <!--  </div> -->
+    </script>
+
+
+    <!--Ain Setting View-->
+    <script type ="text/html" id="shs_ain_setting">
+      <div id="ainSetting" class ="border"> <!-- ain setting start -->
+        <div class="title"> 
+          <span id ="settingBack2Ain"class="leftArrow">&#60;   SHS Ain</span>
+          <h1>Ain Default Setting</h1>
+        </div>
+
+      <div class='setting_content'> <!-- ain setting content start -->
+           <div id="ain_column1">
+            <label class="subtitle"> AIN </label></br></br>
+            <select id='ainSetting_pin'>
+
+            </select>
+          </div>
+
+          <div id='ain_column2'>
+            <label class="subtitle"> Enabled</label> </br></br>
+             <label class="switch">
+              <input type="checkbox" id='ainSetting_switch' > <!-- checked -->
+              <div class="slider round"></div>
+            </label>
+          </div>
+
+          <div id='ain_column3'>
+            <label class="subtitle" id="ain_range_label"> Range </label></br></br>
+            <select id ='ainSetting_range'>
+              <option value = '0'>VDD</option>
+              <option value = '1'>3.6V</option>
+              <option value = '2'>1.2V</option>
+            </select>
+          </div>
+
+          <div id='ain_column4'>
+            <label class="subtitle" id="ain_rate_label"> Rate</label></br></br>
+            <select id='ainSetting_rate'>
+              <option value ='0'>Disabled</option>
+              <option value ='1'>100ms</option>
+              <option value ='2'>1s</option>
+              <option value ='3'>10s</option>
+            </select>
+          </div>
+
+      </div> <!-- ain setting content end -->
+
+      <div class='saveSetting'> <!-- save setting start -->
+        <button class='saveButton' id='ainSetting_saveButton'> Save </button></br></br>
+        <p class='desc'>  <img class ='saveImg' src ='img/ticked.png' id='ainSetting_tickImg'>Lock Database After Save</p> 
+      </div> <!-- save setting end -->
+
+      </div> <!-- ain setting end -->
+    </script>
+
+      <script type ="text/html" id= 'ainSetting_pin_item'>
+        <%= number %> 
+      </script>
+
+
+    <!--Pwm View-->
+    <script type ="text/html" id="shs_pwm">
+      <div id="pwm" class ="border"> <!-- pwm start -->
+        <div class="title"> 
+          <span id ="pwmBack2Interface"class="leftArrow">&#60;   Select Interface</span>
+          <h1>SHS Pwm</h1>
+          <span id="pwmSetting" class="setting"> Setting</span>
+        </div>
+
+      <div id='pwm_content'> <!-- pwm content start -->  
+      </div> <!-- pwm content end -->
+
+      </div> <!-- pwm end  -->
+    </script>
+
+    <script type="text/html" id="pwm_item">
+      <label id="pwm_subtitle"><%=type%><%= channelNumber %></label>
+      <input  id ='pwmSeekBar' type ='range' value= '<%= currentDutyCycle %>' 
+        min='0' max='100' step='1'></br></br>
+      <p id ='pwmValue' class ="progressValueStyle"><%= currentDutyCycle %>%</p>
+    </script>
+
+
+
+    <!--Pwm Setting View-->
+    <script type ="text/html" id="shs_pwm_setting">
+      <div id="pwmSetting" class ="border"> <!-- pwmSetting start -->
+        <div class="title"> 
+          <span id ="settingBack2Pwm"class="leftArrow">&#60;   SHS Pwm</span>
+          <h1>Pwm Default Setting</h1>
+        </div>
+
+        <div class='setting_content'> <!-- pwmSetting content start -->
+           <div id="pwm_column1">
+            <label class="subtitle">Channel</label></br></br>
+            <select id='pwmSetting_channel'>
+
+            </select>
+          </div>
+
+          <div id='pwm_column2'>
+            <label class="subtitle">Enabled</label> </br></br>
+             <label class="switch">
+              <input type="checkbox" id='pwmSetting_switch'> <!-- checked -->
+              <div class="slider round"></div>
+            </label>
+          </div>
+
+          <div id='pwm_column3'>
+            <label class="subtitle">Pin</label></br></br>
+            <select id='pwmSetting_pinIndex'>
+              <option value='0'> 0 </option>
+              <option value='1'> 1 </option>
+              <option value='2'> 2 </option>
+              <option value='3'> 3 </option>
+              <option value='4'> 4 </option>
+              <option value='5'> 5 </option>
+              <option value='6'> 6 </option>
+              <option value='7'> 7 </option>
+              <option value='8'> 8 </option>
+              <option value='9'> 9 </option>
+              <option value='10'>10 </option>
+              <option value='11'>11 </option>
+              <option value='12'>12 </option>
+              <option value='13'>13 </option>
+              <option value='14'>14 </option>
+              <option value='15'>15 </option>
+              <option value='16'>16 </option>
+              <option value='17'>17 </option>
+              <option value='18'>18 </option>
+              <option value='19'>19 </option>
+              <option value='20'>20 </option>
+              <option value='21'>21 </option>
+              <option value='22'>22 </option>
+              <option value='23'>23 </option>
+              <option value='24'>24 </option>
+              <option value='25'>25 </option>
+              <option value='26'>26 </option>
+              <option value='27'>27 </option>
+              <option value='28'>28 </option>
+              <option value='29'>29 </option>
+              <option value='30'>30 </option>
+              <option value='31'>31 </option>
+            </select>
+          </div>
+
+          <div id='pwm_colum4'>
+            <label class="subtitle">Drive</label></br></br>
+            <select id="pwmSetting_drive">
+              <option value ='0'>S0S1</option>
+              <option value ='1'>H0S1</option>
+              <option value ='2'>S0H1</option>
+              <option value ='3'>H0H1</option>
+              <option value ='4'>D0S1</option>
+              <option value ='5'>D0H1</option>
+              <option value ='6'>S0D1</option>
+              <option value ='7'>H0D1</option>
+            </select>
+          </div>
+
+        </div> <!-- pwmSetting content end -->
+
+        <div class='sliderSetting'>
+          <label class ='sliderLabel'>DutyCycle</label> </br>
+          <input  type ='range' id='pwmDefaultDutyCycle' min='0' max='100' step='1'/></br></br>
+          <p id ='pwmDefaultDutyCylceValue' class ="progressValueStyle"> </p>
+        </div>
+
+        <div class='saveSetting'> <!-- save setting start -->
+          <button class='saveButton' id='pwmSetting_saveButton'> Save </button></br></br>
+          <p class='desc'>  <img class ='saveImg' src ='img/ticked.png' id='pwmSetting_tickImg'>Lock Database After Save  </p> 
+        </div> <!-- save setting end -->
+
+      </div> <!-- pwmSetting end -->
+    </script>
+
+      <script type ="text/html" id= 'pwmSetting_channel_item'>
+        <%= channelNumber %> 
+      </script>
+
+
+    <!--Servo View-->
+    <script type ="text/html" id="shs_servo">
+      <div id="servo" class ="border"> <!-- servo start -->
+        <div class="title"> 
+          <span id ="servoBack2Interface"class="leftArrow">&#60;   Select Interface</span>
+          <h1>SHS Servo</h1>
+          <span id="servoSetting" class="setting"> Setting</span>
+        </div>
+
+        <div id="servo_content"> <!-- servo content start -->
+
+        </div> <!-- servo content end -->
+      </div> <!-- serrvo end -->
+    </script>
+
+
+    <script type="text/html" id ="servo_item">
+      <label id="servo_subtitle"><%=type%><%= channelNumber %></label>
+      <input  id= 'servoSeekBar' type ='range' value= '<%= currentPercentage%>' min='0' max='100' step='1'/></br></br></br>
+      <p id ='percentageValue' class ="progressValueStyle"><%= currentPercentage %>%</p>
+
+    </script>
+
+    <!--Servo Setting View-->
+    <script type ="text/html" id="shs_servo_setting">
+      <div id="servoSetting" class ="border"> <!-- servoSetting start -->
+        <div class="title"> 
+          <span id ="settingBack2Servo"class="leftArrow">&#60;   SHS Servo </span>
+          <h1>Servo Default Setting</h1>
+        </div>
+
+        <div class='setting_content'> <!-- servoSetting content start -->
+           <div id="servo_column1">
+            <label class="subtitle">Channel</label></br></br>
+            <select id='servoSetting_channel'>
+
+            </select>
+          </div>
+
+          <div id='servo_column2'>
+            <label class="subtitle">Enabled</label> </br></br>
+             <label class="switch">
+              <input type="checkbox" id='servoSetting_switch' > <!-- checked -->
+              <div class="slider round"></div>
+            </label>
+          </div>
+
+          <div id='servo_column3'>
+            <label class="subtitle">Pin</label></br></br>
+            <select id='servoSetting_pinIndex'>
+              <option value='0'> 0 </option>
+              <option value='1'> 1 </option>
+              <option value='2'> 2 </option>
+              <option value='3'> 3 </option>
+              <option value='4'> 4 </option>
+              <option value='5'> 5 </option>
+              <option value='6'> 6 </option>
+              <option value='7'> 7 </option>
+              <option value='8'> 8 </option>
+              <option value='9'> 9 </option>
+              <option value='10'>10 </option>
+              <option value='11'>11 </option>
+              <option value='12'>12 </option>
+              <option value='13'>13 </option>
+              <option value='14'>14 </option>
+              <option value='15'>15 </option>
+              <option value='16'>16 </option>
+              <option value='17'>17 </option>
+              <option value='18'>18 </option>
+              <option value='19'>19 </option>
+              <option value='20'>20 </option>
+              <option value='21'>21 </option>
+              <option value='22'>22 </option>
+              <option value='23'>23 </option>
+              <option value='24'>24 </option>
+              <option value='25'>25 </option>
+              <option value='26'>26 </option>
+              <option value='27'>27 </option>
+              <option value='28'>28 </option>
+              <option value='29'>29 </option>
+              <option value='30'>30 </option>
+              <option value='31'>31 </option>
+            </select>
+          </div>
+
+          <div id='servo_colum4'>
+            <label class="subtitle">Drive</label></br></br>
+            <select id ='servoSetting_drive'>
+              <option value ='0'>S0S1</option>
+              <option value ='1'>H0S1</option>
+              <option value ='2'>S0H1</option>
+              <option value ='3'>H0H1</option>
+              <option value ='4'>D0S1</option>
+              <option value ='5'>D0H1</option>
+              <option value ='6'>S0D1</option>
+              <option value ='7'>H0D1</option>
+            </select>
+          </div>
+
+        </div> <!-- servoSetting content end -->
+
+         <div class='sliderSetting'>
+          <label class ='sliderLabel'>Percentage</label> </br>
+          <input  type ='range' id='servoDefaultPercentage' min='0' max='100' step='1'/></br></br>
+          <p id ='servoDefaultPercentageValue' class ="progressValueStyle"> </p>
+        </div>
+
+        <div class='saveSetting'> <!-- save setting start -->
+          <button class='saveButton' id='servoSetting_saveButton'> Save </button></br></br>
+          <p class='desc'>  <img class ='saveImg' src ='img/ticked.png' id='servoSetting_tickImg'>Lock Database After Save  </p> 
+        </div> <!-- save setting end -->
+
+      </div> <!-- servoSetting end -->
+    </script>
+
+
+      <script type ="text/html" id= 'servoSetting_channel_item'>
+        <%= channelNumber %> 
+      </script>
+
+
+   </body>
+</html>
