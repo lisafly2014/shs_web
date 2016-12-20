@@ -23,6 +23,7 @@ define(['models/utility',
 	var updatedConfig;
 	var array=[];
 	let sequence;
+	let initFinished;
 
 	function handleShsResponse(event){
 			let value = event.target.value;
@@ -33,9 +34,11 @@ define(['models/utility',
 						let din = DinItems.at(dinPin);
 						DinItems.at(dinPin).setEnabledStatus(true);
 						DinItems.at(dinPin).setDefaultPullValue(value.getUint8(2));
+						if(!initFinished){
+							let dinComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+							array.push( dinComValue);
+						}
 
-						let dinComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
-						array.push( dinComValue);
 					}else if((value.getUint8(1)>=Utility.FUNCTION_ID_DOUT_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_DOUT_31)){
 						let doutPin = value.getUint8(1) - Utility.FUNCTION_ID_DOUT_0;
 						let pullValue = value.getUint8(2) & 0x03;
@@ -45,10 +48,11 @@ define(['models/utility',
 						dout.setPullValue(pullValue);
 						dout.setDriveValue(driveValue);
 						dout.setDefaultPinValue(value.getUint8(3));
-
-						let doutComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
-						array.push(doutComValue);	
-
+						if(!initFinished){
+							let doutComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+							array.push(doutComValue);
+						}
+						// console.log(JSON.stringify(dout));	
 					}else if((value.getUint8(1)>=Utility.FUNCTION_ID_AIN_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_AIN_5)){
 						let ainPin = value.getUint8(1) - Utility.FUNCTION_ID_AIN_0;
 						let rangeValue = value.getUint8(2) & 0x03;
@@ -59,8 +63,10 @@ define(['models/utility',
 						ain.setRangeValue(rangeValue);
 						ain.setRateValue(rateValue);
 						// console.log(JSON.stringify(AinItems.at(ainPin)));
-						let ainComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
-						array.push(ainComValue);
+						if(!initFinished){
+							let ainComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+							array.push(ainComValue);
+						}
 					}
 					else if((value.getUint8(1)>=Utility.FUNCTION_ID_PWM_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_PWM_3)){
 						let pwmIndex = value.getUint8(1) - Utility.FUNCTION_ID_PWM_0;
@@ -70,8 +76,10 @@ define(['models/utility',
 						pwm.setDriveValue(value.getUint8(3));
 						pwm.setDefaultDutyCycle(value.getUint8(4));
 						// console.log(JSON.stringify(pwm));
-						let pwmComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
-						array.push(pwmComValue);
+						if(!initFinished){
+							let pwmComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+							array.push(pwmComValue);
+						}
 
 					}else if((value.getUint8(1)>=Utility.FUNCTION_ID_SERVO_0) & (value.getUint8(1)<=Utility.FUNCTION_ID_SERVO_3)){
 						let servoIndex = value.getUint8(1) - Utility.FUNCTION_ID_SERVO_0;
@@ -81,8 +89,11 @@ define(['models/utility',
 						servo.setDriveValue(value.getUint8(3));
 						servo.setDefaultPercentage(value.getUint8(4));
 						// console.log(JSON.stringify(ServoItems.at(servoIndex)));
-						let servoComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
-						array.push(servoComValue);
+						if(!initFinished){
+							let servoComValue = new Uint8Array([Utility.MANAGE_ID_INTERFACE_READ,value.getUint8(1)]);
+							array.push(servoComValue);
+						}
+	
 					}
 			}else if(value.getUint8(0)=== Utility.MANAGE_ID_DEVICE_RESPONSE){
 				if(value.getUint8(1) === Utility.MANAGE_ID_DEVICE_GET_INTERFACES){
@@ -264,7 +275,7 @@ define(['models/utility',
 				if(dinItem.getEnabledStatus() === true){
 					dinItem.setStatusValue(value.getUint8(1));
 				}
-				console.log(JSON.stringify(dinItem));
+				// console.log(JSON.stringify(dinItem));
 				
 			}else if((value.getUint8(0) >= Utility.FUNCTION_ID_DOUT_0)&(value.getUint8(0) <= Utility.FUNCTION_ID_DOUT_31)){
 				let doutIndex = value.getUint8(0) - Utility.FUNCTION_ID_DOUT_0;
@@ -332,6 +343,7 @@ define(['models/utility',
 			 	});
 			});
 			array =[];
+			initFinished = true;
 
 		}
 
@@ -376,6 +388,7 @@ define(['models/utility',
 		},
 		initInterfaceConfiguration: function(){
 			sequence = Promise.resolve();
+			initFinished = false;
 			for(let i = 0;i < Utility.DIN_PIN_NUM;i++){
 				let din = DinItems.at(i);
 				din.setEnabledStatus(false); //enabled status
@@ -549,7 +562,7 @@ define(['models/utility',
 			configCommand.push(new Uint8Array([Utility.MANAGE_ID_DEVICE_STORE_CONFIG]));
 			let isLocked = localStorage.getItem('deviceLocked');
 			// console.log('lock: '+ typeof(isLocked)+',value: '+isLocked);
-			if(localStorage.getItem('deviceLocked')==='true'){
+			if(isLocked==='true'){
 				configCommand.push(new Uint8Array([Utility.MANAGE_ID_DEVICE_LOCK]));
 			}
 			let sequence = Promise.resolve();

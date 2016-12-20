@@ -75,7 +75,7 @@ define(['backbone',
                          this.$('#doutSetting_drive').val(currentDriveValue);
                          this.$('#doutSetting_drive').prop('disabled',true);
 
-                         newDefaulPintValue = 0;
+                         currentDefaultPinValue = 0;
                          this.$('#doutSetting_default').val(currentDefaultPinValue);
                          this.$('#doutSetting_default').prop('disabled',true);
                     }
@@ -93,15 +93,15 @@ define(['backbone',
                 },
                 changePullValue:function(){
                    currentPullValue =this.$('#doutSetting_pull').val();
-                   console.log('currentPullValue: '+ currentPullValue);
+                   // console.log('currentPullValue: '+ currentPullValue);
                 },
                 changeDriveValue:function(){
                     currentDriveValue =this.$('#doutSetting_drive').val();
-                    console.log('currentDriveValue: '+ currentDriveValue);
+                    // console.log('currentDriveValue: '+ currentDriveValue);
                 },
                 changeDefaultValue:function(){
                     currentDefaultPinValue = this.$('#doutSetting_default').val();
-                    console.log('currentDefaultPinValue: '+ currentDefaultPinValue);
+                    // console.log('currentDefaultPinValue: '+ currentDefaultPinValue);
                 },
 
                 saveButton: function(){
